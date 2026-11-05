@@ -65,10 +65,6 @@ def refreshWEBAPI():
         win32clipboard.CloseClipboard()
         web_api_refreshed = 1
 
-
-
-
-
 def get_game_library():
     url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid=23683344&include_own=true"
     #url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={api_key}"
@@ -85,24 +81,6 @@ def get_game_library():
         return [game["appid"] for game in games], [game["name"] for game in games]
     else:
         return []
-
-def get_game_details(api_key, app_ids):
-    game_list = []
-    for app_id in app_ids:
-        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-        response = requests.get(url)
-        data = response.json()
-
-        if data and str(app_id) in data and data[str(app_id)]["success"]:
-            name = data[str(app_id)]["data"]["name"]
-            review_score = data[str(app_id)]["data"]["metacritic"]["score"] if "metacritic" in data[str(app_id)]["data"] else "N/A"
-            print(f"Game: {name} (App ID: {app_id}), Review Score: {review_score}")
-            game_list.append(name)
-        else:
-            print(f"Failed to retrieve game details for App ID: {app_id}")
-            print(data)  # Print API response for troubleshooting
-            game_list.append(app_id)
-    return game_list
 
 def get_games():
     app_ids, game_list = get_game_library()
