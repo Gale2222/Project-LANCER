@@ -4,8 +4,18 @@ from pyautogui import typewrite, hotkey, press
 import pygetwindow as gw
 import time
 import win32clipboard
+import pathlib
+import os
 
 web_api_refreshed = 0
+runPath = str(pathlib.Path.home() / "AppData/Roaming/Microsoft/Windows/Start Menu/Programs/")
+runList = list(runPath)
+for i in range(len(runList)):
+    if runList[i] == "\\":
+        runList[i] = "/"
+runList.append("/")
+runPath = ''.join(runList)
+
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -18,12 +28,16 @@ web_api = ""
 def refreshWEBAPI():
     global web_api_refreshed
     if web_api_refreshed == 0:
-        win = gw.getWindowsWithTitle('Google Chrome')[0]
-        win.activate()
-        hotkey("ctrl", "t")
+        try:
+            win = gw.getWindowsWithTitle('Google Chrome')[0]
+            win.activate()
+            hotkey("ctrl", "t")
+        except IndexError:
+            os.startfile(f"{runPath}Google Chrome.lnk")
+            time.sleep(2)
         typewrite("https://store.steampowered.com/pointssummary/ajaxgetasyncconfig")
         press("enter")
-        time.sleep(1)
+        time.sleep(1.5)
         hotkey("ctrl", "a")
         hotkey("ctrl", "c")
         hotkey("ctrl", "w")
