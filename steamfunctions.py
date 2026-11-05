@@ -66,15 +66,30 @@ def refreshWEBAPI():
         web_api_refreshed = 1
 
 def get_game_library():
-    url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid=23683344&include_own=true"
-    #url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={api_key}"
+    family = True
+    url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
     response = requests.get(url)
     try:
         data = response.json()
     except requests.exceptions.JSONDecodeError:
         refreshWEBAPI()
+        url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
         response = requests.get(url)
         data = response.json()
+
+    if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
+        family = False
+
+    if "response" in data and "family_groupid" in data["response"]:
+        familyid = data["response"]["family_groupid"]
+        
+
+    if family == True:
+        url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
+    if family == False:
+        url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
+    response = requests.get(url)
+    data = response.json()
 
     if "response" in data and "apps" in data["response"]:
         games = data["response"]["apps"]
@@ -87,16 +102,29 @@ def get_games():
     return game_list, app_ids
 
 def get_last_played():
-    url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid=23683344&include_own=true"
+    family = True
+    url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
     response = requests.get(url)
     try:
         data = response.json()
     except requests.exceptions.JSONDecodeError:
         refreshWEBAPI()
-        url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid=23683344&include_own=true"
+        url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
         response = requests.get(url)
         data = response.json()
-    highest_id = 0
+
+    if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
+        family = False
+    
+    if "response" in data and "family_groupid" in data["response"]:
+        familyid = data["response"]["family_groupid"]
+
+    if family == True:
+        url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
+    if family == False:
+        url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
+    response = requests.get(url)
+    data = response.json()
     highest_time = 0
     if "response" in data and "apps" in data["response"]:
         games = data["response"]["apps"]
@@ -133,4 +161,5 @@ def get_description_last():
 
 if __name__ == "__main__":
     game_list = get_last_played()
+    print(game_list)
     pass    
