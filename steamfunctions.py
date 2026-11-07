@@ -50,11 +50,11 @@ def refreshWEBAPI():
         global web_api_refreshed
         if web_api_refreshed == 0:
             try:
-                win = gw.getWindowsWithTitle('Google Chrome')[0]
+                win = gw.getWindowsWithTitle(f'{browser}')[0]
                 win.activate()
                 hotkey("ctrl", "t")
             except IndexError:
-                os.startfile(f"{runPath}Google Chrome.lnk")
+                os.startfile(f"{runPath}{browser}.lnk")
                 time.sleep(2)
             typewrite("https://store.steampowered.com/pointssummary/ajaxgetasyncconfig")
             press("enter")
