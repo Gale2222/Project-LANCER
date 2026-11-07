@@ -325,6 +325,33 @@ def steamRoulette(steamGames):
     f = open("selection.txt", "w")
     f.write(steamGames[num])
     f.close()
+    try:
+        win = gw.getWindowsWithTitle('Steam Big Picture Mode')[0]
+        win.activate()
+        time.sleep(0.5)
+        click(123, 1051)
+        time.sleep(0.5)
+        click(165, 380)
+        time.sleep(1)
+        click(200, 50)
+        typewrite(steamGames[num])
+        time.sleep(1)
+        click(188, 201)
+    except IndexError:
+        try:
+            win = gw.getWindowsWithTitle('Steam')[0]
+            win.activate()
+            click(232, 59)
+            time.sleep(1)
+            click(277, 226)
+            time.sleep(0.3)
+            click(200, 226)
+            typewrite(steamGames[num])
+            time.sleep(1)
+            click(234, 300)
+            press("down")
+        except:
+            pass
 
 def bigPictureMode():
     win = gw.getWindowsWithTitle('Steam')[0]
