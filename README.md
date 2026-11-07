@@ -3,14 +3,25 @@ A voice-controlled (not generative) AI that runs on the user's PC!
 
 Can be used with Modrinth, Discord, Google Chrome and Steam.
 
-## Setup Guide
+Windows only.
+
+## Install Guide (releases)
+- In Releases, download the .zip file.
+- Extract it.
+- Run either rascal.exe or rascal_no_gui.exe
+- rascal.exe is a version of LANCER that opens a command prompt window
+- rascal_no_gui.exe does not open the command prompt, but runs LANCER in the background'
+- The exe should create config.json, selection.txt, steamappids.txt, and steamgames.txt
+- See "For Steam" below to use Steam functions.
+
+## Setup Guide (source code)
 - Open a PowerShell window in the folder with Shift + Right Click
 - Run
 ```powershell
 pip install -r requirements.txt
 ```
 
-### FOR STEAM
+## For Steam
 - Create a Steam Web API Key [here](https://steamcommunity.com/dev/apikey)
 - Open config.json in your preferred text editor
 - Paste in your Web API Key.
