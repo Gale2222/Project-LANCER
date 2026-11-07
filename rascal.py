@@ -4,6 +4,7 @@ Gale2222
 """
 ### --- IMPORTS --- ###
 import os
+import json
 import psutil
 import win32api, win32con
 import pygetwindow as gw
@@ -55,6 +56,10 @@ except:
     f = open("steamappids.txt", "w")
     steamAppIdList = []
     f.close()
+
+with open("config.json") as config_file:
+    config = json.load(config_file)
+    browser = config["browser"]
 
 ### --- FUNCTIONS --- ###
 
@@ -198,7 +203,7 @@ def minecraftOptions():
 # ----- GOOGLE ----- #
 
 def searchGoogle(text):
-    win = gw.getWindowsWithTitle('Google Chrome')[0]
+    win = gw.getWindowsWithTitle(f'{browser}')[0]
     win.activate()
     hotkey("ctrl", "t")
     typewrite(f"{text}")
@@ -207,12 +212,12 @@ def searchGoogle(text):
     press("enter")
 
 def closeGoogleTab():
-    win = gw.getWindowsWithTitle('Google Chrome')[0]
+    win = gw.getWindowsWithTitle(f'{browser}')[0]
     win.activate()
     hotkey("ctrl", "w")
 
 def searchYoutube(text):
-    win = gw.getWindowsWithTitle('Google Chrome')[0]
+    win = gw.getWindowsWithTitle(f'{browser}')[0]
     win.activate()
     hotkey("ctrl", "t")
     typewrite(f"you")
@@ -224,7 +229,7 @@ def searchYoutube(text):
     press("enter")
 
 def newTab():
-    win = gw.getWindowsWithTitle('Google Chrome')[0]
+    win = gw.getWindowsWithTitle(f'{browser}')[0]
     win.activate()
     hotkey("ctrl", "t")
 
@@ -394,14 +399,14 @@ def listCommands():
     typewrite("run newest Minecraft - Focuses on Modrinth and runs the last instance used.")
     press("enter")
     press("enter")
-    typewrite("# ----- GOOGLE ----- #")
+    typewrite("# ----- BROWSERS ----- #")
     press("enter")
     press("enter")
-    typewrite("close tab - Closes a Google tab.")
+    typewrite("close tab - Closes a tab.")
     press("enter")
     typewrite("new tab - Opens a new tab.")
     press("enter")
-    typewrite("search - Searches on Google.")
+    typewrite("search - Searches on the browser in config.json.")
     press("enter")
     typewrite("YouTube - Searches on YouTube.")
     press("enter")

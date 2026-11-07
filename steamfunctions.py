@@ -29,9 +29,15 @@ try:
         user_id = config["user_id"]
         if user_id == "<insert 64-bit user id here>":
             noSteam = 1
+        if "browser" in config:
+            browser = config["browser"]
+        else:
+            browser = "Google Chrome"
+
+        config.write('{"api_key": "' + api_key + '", "user_id": "' + user_id + '", "browser": "' + browser + '"}')
 except:
     config = open("config.json", "w")
-    config.write('{"api_key": "<insert api key here>", "user_id": "<insert 64-bit user id here>"}')
+    config.write('{"api_key": "<insert api key here>", "user_id": "<insert 64-bit user id here>", "browser": "Google Chrome"}')
     api_key = "0"
     user_id = 0
     noSteam = 1
