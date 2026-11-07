@@ -24,6 +24,9 @@ LANCER does not send information outside of your PC. I will not know any informa
 Information for activating on startup will be below.
 
 ## Key Commands
+
+Start every command with "Lancer, ".
+
 - help/list commands - Opens Notepad and lists every command to the user
 - open/run - Runs an application in AppData/Roaming/Microsoft/Windows/Start Menu/Programs. Note that it doesn't check folders, so Steam shortcuts should be moved to this folder instead of the Steam subfolder.
 - close/kill - Closes an application.

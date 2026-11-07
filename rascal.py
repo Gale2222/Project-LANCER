@@ -36,15 +36,25 @@ for i in range(len(runList)):
 runList.append("/")
 runPath = ''.join(runList)
 
-f = open("steamgames.txt")
-fileList = f.read()
-steamList = fileList.splitlines()
-f.close()
+try:
+    f = open("steamgames.txt")
+    fileList = f.read()
+    steamList = fileList.splitlines()
+    f.close()
+except:
+    f = open("steamgames.txt", "w")
+    steamList = []
+    f.close()
 
-f = open("steamappids.txt")
-fileList = f.read()
-steamAppIdList = fileList.splitlines()
-f.close()
+try:
+    f = open("steamappids.txt")
+    fileList = f.read()
+    steamAppIdList = fileList.splitlines()
+    f.close()
+except:
+    f = open("steamappids.txt", "w")
+    steamAppIdList = []
+    f.close()
 
 ### --- FUNCTIONS --- ###
 
@@ -320,15 +330,15 @@ def bigPictureMode():
 
 def reviewScoreLast():
     name, score = get_review_score_last()
-    print(f"Your game {name} has a review score of {score}")
-    ttsengine.say(f"Your game {name} has a review score of {score}")
-    ttsengine.runAndWait()
+    if name != "none":
+        ttsengine.say(f"Your game {name} has a review score of {score}")
+        ttsengine.runAndWait()
 
 def descriptionLast():
     name, description = get_description_last()
-    print(f"Your game {name}'s description is: {description}")
-    ttsengine.say(f"Your game {name}'s description is: {description}")
-    ttsengine.runAndWait()
+    if name != "none":
+        ttsengine.say(f"Your game {name}'s description is: {description}")
+        ttsengine.runAndWait()
 
 # ----- HELP ----- #
 

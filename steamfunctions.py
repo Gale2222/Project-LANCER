@@ -6,6 +6,7 @@ import time
 import win32clipboard
 import pathlib
 import os
+import pyttsx3
 
 web_api_refreshed = 0
 runPath = str(pathlib.Path.home() / "AppData/Roaming/Microsoft/Windows/Start Menu/Programs/")
@@ -15,149 +16,181 @@ for i in range(len(runList)):
         runList[i] = "/"
 runList.append("/")
 runPath = ''.join(runList)
+noSteam = 0
+ttsengine = pyttsx3.init()
 
-
-with open('config.json') as config_file:
-    config = json.load(config_file)
+try:
+    with open('config.json') as config_file:
+        config = json.load(config_file)
     
-    api_key = config["api_key"]
-    user_id = config["user_id"]
+        api_key = config["api_key"]
+        if api_key == "<insert api key here>":
+            noSteam = 1
+        user_id = config["user_id"]
+        if user_id == "<insert 64-bit user id here>":
+            noSteam = 1
+except:
+    config = open("config.json", "w")
+    config.write('{"api_key": "<insert api key here>", "user_id": "<insert 64-bit user id here>"}')
+    api_key = "0"
+    user_id = 0
+    noSteam = 1
+    config.close()
 
 web_api = ""
 
 def refreshWEBAPI():
-    global web_api_refreshed
-    if web_api_refreshed == 0:
-        try:
-            win = gw.getWindowsWithTitle('Google Chrome')[0]
-            win.activate()
-            hotkey("ctrl", "t")
-        except IndexError:
-            os.startfile(f"{runPath}Google Chrome.lnk")
-            time.sleep(2)
-        typewrite("https://store.steampowered.com/pointssummary/ajaxgetasyncconfig")
-        press("enter")
-        time.sleep(1.5)
-        hotkey("ctrl", "a")
-        hotkey("ctrl", "c")
-        hotkey("ctrl", "w")
-        time.sleep(0.2)
-        press("win")
-        time.sleep(0.1)
-        typewrite("notepad")
-        press("enter")
-        time.sleep(0.2)
-        hotkey("ctrl", "win", "up")
-        hotkey("ctrl", "v")
-        for i in range(4):
-            press("left")
-        for i in range(4):
-            hotkey("shiftleft", "shiftright", "up")
-        for i in range(17):
-            hotkey("shiftleft", "shiftright", "right")
-        hotkey("ctrl", "c")
-        hotkey("ctrl", "w")
-        press("right")
-        press("enter")
-        win32clipboard.OpenClipboard()
-        global web_api
-        web_api = win32clipboard.GetClipboardData()
-        win32clipboard.CloseClipboard()
-        web_api_refreshed = 1
+    if noSteam == 0:
+        global web_api_refreshed
+        if web_api_refreshed == 0:
+            try:
+                win = gw.getWindowsWithTitle('Google Chrome')[0]
+                win.activate()
+                hotkey("ctrl", "t")
+            except IndexError:
+                os.startfile(f"{runPath}Google Chrome.lnk")
+                time.sleep(2)
+            typewrite("https://store.steampowered.com/pointssummary/ajaxgetasyncconfig")
+            press("enter")
+            time.sleep(1.5)
+            hotkey("ctrl", "a")
+            hotkey("ctrl", "c")
+            hotkey("ctrl", "w")
+            time.sleep(0.2)
+            press("win")
+            time.sleep(0.1)
+            typewrite("notepad")
+            press("enter")
+            time.sleep(0.2)
+            hotkey("ctrl", "win", "up")
+            hotkey("ctrl", "v")
+            for i in range(4):
+                press("left")
+            for i in range(4):
+                hotkey("shiftleft", "shiftright", "up")
+            for i in range(17):
+                hotkey("shiftleft", "shiftright", "right")
+            hotkey("ctrl", "c")
+            hotkey("ctrl", "w")
+            press("right")
+            press("enter")
+            win32clipboard.OpenClipboard()
+            global web_api
+            web_api = win32clipboard.GetClipboardData()
+            win32clipboard.CloseClipboard()
+            web_api_refreshed = 1
+    else:
+        ttsengine.say("No valid Steam connected in config.json")
+        ttsengine.runAndWait()            
 
 def get_game_library():
-    family = True
-    url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
-    response = requests.get(url)
-    try:
-        data = response.json()
-    except requests.exceptions.JSONDecodeError:
-        refreshWEBAPI()
+    if noSteam == 0:
+        family = True
         url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
+        response = requests.get(url)
+        try:
+            data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            refreshWEBAPI()
+            url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
+            response = requests.get(url)
+            data = response.json()
+
+        if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
+            family = False
+
+        if "response" in data and "family_groupid" in data["response"]:
+            familyid = data["response"]["family_groupid"]
+        
+
+        if family == True:
+            url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
+        if family == False:
+            url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
         response = requests.get(url)
         data = response.json()
 
-    if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
-        family = False
-
-    if "response" in data and "family_groupid" in data["response"]:
-        familyid = data["response"]["family_groupid"]
-        
-
-    if family == True:
-        url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
-    if family == False:
-        url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
-    response = requests.get(url)
-    data = response.json()
-
-    if "response" in data and "apps" in data["response"]:
-        games = data["response"]["apps"]
-        return [game["appid"] for game in games], [game["name"] for game in games]
+        if "response" in data and "apps" in data["response"]:
+            games = data["response"]["apps"]
+            return [game["appid"] for game in games], [game["name"] for game in games]
+        else:
+            return [], []
     else:
-        return []
+        ttsengine.say("No valid Steam connected in config.json")
+        ttsengine.runAndWait()
+        return [], [] 
 
 def get_games():
     app_ids, game_list = get_game_library()
     return game_list, app_ids
 
 def get_last_played():
-    family = True
-    url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
-    response = requests.get(url)
-    try:
-        data = response.json()
-    except requests.exceptions.JSONDecodeError:
-        refreshWEBAPI()
+    if noSteam == 0:
+        family = True
         url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
         response = requests.get(url)
-        data = response.json()
+        try:
+            data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            refreshWEBAPI()
+            url = f"https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token={web_api}"
+            response = requests.get(url)
+            data = response.json()
 
-    if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
-        family = False
+        if "response" in data and data["response"]["is_not_member_of_any_group"] == True:
+            family = False
     
-    if "response" in data and "family_groupid" in data["response"]:
-        familyid = data["response"]["family_groupid"]
+        if "response" in data and "family_groupid" in data["response"]:
+            familyid = data["response"]["family_groupid"]
 
-    if family == True:
-        url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
-    if family == False:
-        url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
-    response = requests.get(url)
-    data = response.json()
-    highest_time = 0
-    if "response" in data and "apps" in data["response"]:
-        games = data["response"]["apps"]
-    for i in range(len(games)):
-        if games[i]["rt_last_played"] > highest_time:
-            highest_time = games[i]["rt_last_played"]
-            highest_id = games[i]["appid"]
-    return highest_id
-
+        if family == True:
+            url = f"https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token={web_api}&family_groupid={str(familyid)}&include_own=true"
+        if family == False:
+            url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={api_key}&steamid={str(user_id)}"
+        response = requests.get(url)
+        data = response.json()
+        highest_time = 0
+        if "response" in data and "apps" in data["response"]:
+            games = data["response"]["apps"]
+        for i in range(len(games)):
+            if games[i]["rt_last_played"] > highest_time:
+                highest_time = games[i]["rt_last_played"]
+                highest_id = games[i]["appid"]
+        return highest_id
+    else:
+        ttsengine.say("No valid Steam connected in config.json")
+        ttsengine.runAndWait()
+        return 0 
 
 def get_review_score_last():
     app_id = get_last_played()
-    url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-    response = requests.get(url)
-    data = response.json()
+    if app_id == 0:
+        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+        response = requests.get(url)
+        data = response.json()
     
-    if data and str(app_id) in data and data[str(app_id)]["success"]:
-        name = data[str(app_id)]["data"]["name"]
-        review_score = data[str(app_id)]["data"]["metacritic"]["score"] if "metacritic" in data[str(app_id)]["data"] else "N/A"
-        return name, review_score
-    return "none", 0
+        if data and str(app_id) in data and data[str(app_id)]["success"]:
+            name = data[str(app_id)]["data"]["name"]
+            review_score = data[str(app_id)]["data"]["metacritic"]["score"] if "metacritic" in data[str(app_id)]["data"] else "N/A"
+            return name, review_score
+        return "none", 0
+    else:
+        return "none", 0
 
 def get_description_last():
     app_id = get_last_played()
-    url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-    response = requests.get(url)
-    data = response.json()
+    if app_id == 0:
+        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+        response = requests.get(url)
+        data = response.json()
         
-    if data and str(app_id) in data and data[str(app_id)]["success"]:
-        name = data[str(app_id)]["data"]["name"]
-        description = data[str(app_id)]["data"]["short_description"] if "short_description" in data[str(app_id)]["data"] else "N/A"
-        return name, description
-    return "none", "none"
+        if data and str(app_id) in data and data[str(app_id)]["success"]:
+            name = data[str(app_id)]["data"]["name"]
+            description = data[str(app_id)]["data"]["short_description"] if "short_description" in data[str(app_id)]["data"] else "N/A"
+            return name, description
+        return "none", "none"
+    else:
+        return "none", "none"
 
 if __name__ == "__main__":
     game_list = get_last_played()
