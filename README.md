@@ -1,7 +1,7 @@
 # Project-LANCER
 A voice-controlled (not generative) AI that runs on the user's PC!
 
-Can be used with Modrinth, Discord, Google Chrome and Steam.
+Can be used with Modrinth, Discord, browsers and Steam.
 
 Windows only.
 
