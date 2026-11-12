@@ -57,9 +57,9 @@ except:
     steamAppIdList = []
     f.close()
 
-with open("config.json") as config_file:
-    config = json.load(config_file)
-    browser = config["browser"]
+config_file = open("config.json")
+config = json.load(config_file)
+browser = config["browser"]
 
 ### --- FUNCTIONS --- ###
 
@@ -297,12 +297,9 @@ def steamRefresh():
     ttsengine.say("Refreshing Steam games")
     ttsengine.runAndWait()
     steamGames, steamAppIds = get_games()
-    f = open("steamgames.txt", "w")
+    f = open("steamgames.txt", "w", encoding="utf-8")
     for i in range(len(steamGames)):
-        try:
-            f.write(f"{steamGames[i]} \n")
-        except UnicodeEncodeError:
-            f.write(f"{steamGames[i][6:]}")
+        f.write(f"{steamGames[i]} \n")
     f.close()
     f = open("steamappids.txt", "w")
     for i in range(len(steamGames)):

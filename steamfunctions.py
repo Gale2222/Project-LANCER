@@ -20,21 +20,24 @@ noSteam = 0
 ttsengine = pyttsx3.init()
 
 try:
-    with open('config.json') as config_file:
-        config = json.load(config_file)
-    
-        api_key = config["api_key"]
-        if api_key == "<insert api key here>":
-            noSteam = 1
-        user_id = config["user_id"]
-        if user_id == "<insert 64-bit user id here>":
-            noSteam = 1
-        if "browser" in config:
-            browser = config["browser"]
-        else:
-            browser = "Google Chrome"
+    config_file = open("config.json")
+    config = json.load(config_file)
 
-        config.write('{"api_key": "' + api_key + '", "user_id": "' + user_id + '", "browser": "' + browser + '"}')
+    api_key = config["api_key"]
+    if api_key == "<insert api key here>":
+        noSteam = 1
+    user_id = config["user_id"]
+    if user_id == "<insert 64-bit user id here>":
+        noSteam = 1
+    if "browser" in config:
+        browser = config["browser"]
+    else:
+        browser = "Google Chrome"
+    config_write = ('{"api_key": "' + api_key + '", "user_id": "' + str(user_id) + '", "browser": "' + browser + '"}')
+    config_file.close()
+    config_file = open("config.json", "w")
+    config_file.write(config_write)
+    config_file.close()
 except:
     config = open("config.json", "w")
     config.write('{"api_key": "<insert api key here>", "user_id": "<insert 64-bit user id here>", "browser": "Google Chrome"}')
