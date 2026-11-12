@@ -1,0 +1,1 @@
+pyinstaller --icon rascal.ico rascal.py
