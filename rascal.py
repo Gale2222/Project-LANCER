@@ -7,6 +7,7 @@ import os
 import json
 import psutil
 import win32api, win32con
+import win32clipboard
 import pygetwindow as gw
 import pyscreenshot
 import time
@@ -15,13 +16,15 @@ import pyttsx3
 import random
 import pathlib
 from pocketsphinx import LiveSpeech
-from pyautogui import press, typewrite, hotkey, keyDown, keyUp
+from pyautogui import press, typewrite, hotkey, keyDown, keyUp, rightClick
+from PIL import Image
 
 from steamfunctions import get_games, get_review_score_last, get_description_last
 
 ### --- VARIABLES --- ###
 dictation = False
 respond = False
+filter = False
 shutDownPath = "shutdown.bat"
 r = sr.Recognizer()
 r.dynamic_energy_threshold = True
@@ -36,6 +39,12 @@ for i in range(len(runList)):
         runList[i] = "/"
 runList.append("/")
 runPath = ''.join(runList)
+
+if not os.path.exists("screenshots"):
+    os.makedirs("screenshots")
+
+if not os.path.exists("edits"):
+    os.makedirs("edits")
 
 try:
     f = open("steamgames.txt")
@@ -309,46 +318,51 @@ def steamRefresh():
     return(steamGames, steamAppIds)
 
 def steamRoulette(steamGames):
-    ttsengine.say("rolling")
-    ttsengine.runAndWait()
-    num = random.randint(0,len(steamGames))
-    time.sleep(2)
-    if steamGames[num].isdecimal():
-        ttsengine.say(f"Your Steam game has been stored in selection.txt")
+    if len(steamGames) > 0:
+        ttsengine.say("rolling")
         ttsengine.runAndWait()
-    else:
-        ttsengine.say(f"Your chosen game is {steamGames[num]}")
-        ttsengine.runAndWait()
-    f = open("selection.txt", "w")
-    f.write(steamGames[num])
-    f.close()
-    try:
-        win = gw.getWindowsWithTitle('Steam Big Picture Mode')[0]
-        win.activate()
-        time.sleep(0.5)
-        click(123, 1051)
-        time.sleep(0.5)
-        click(165, 380)
-        time.sleep(1)
-        click(200, 50)
-        typewrite(steamGames[num])
-        time.sleep(1)
-        click(188, 201)
-    except IndexError:
+        num = random.randint(0,len(steamGames))
+        time.sleep(2)
+        if steamGames[num].isdecimal():
+            ttsengine.say(f"Your Steam game has been stored in selection.txt")
+            ttsengine.runAndWait()
+        else:
+            ttsengine.say(f"Your chosen game is {steamGames[num]}")
+            ttsengine.runAndWait()
+        f = open("selection.txt", "w")
+        f.write(steamGames[num])
+        f.close()
         try:
-            win = gw.getWindowsWithTitle('Steam')[0]
+            win = gw.getWindowsWithTitle('Steam Big Picture Mode')[0]
             win.activate()
-            click(232, 59)
+            time.sleep(0.5)
+            click(123, 1051)
+            time.sleep(0.5)
+            click(165, 380)
             time.sleep(1)
-            click(277, 226)
-            time.sleep(0.3)
-            click(200, 226)
-            typewrite(steamGames[num])
+            click(200, 50)
+            typewrite(steamAppIdList[num])
             time.sleep(1)
-            click(234, 300)
-            press("down")
-        except:
-            pass
+            click(188, 201)
+        except IndexError:
+            try:
+                win = gw.getWindowsWithTitle('Steam')[0]
+                win.activate()
+                time.sleep(1)
+                click(232, 59)
+                time.sleep(1)
+                click(277, 226)
+                time.sleep(1)
+                click(200, 226)
+                typewrite(steamAppIdList[num])
+                time.sleep(1)
+                click(234, 300)
+                press("down")
+            except:
+                pass
+    else:
+        ttsengine.say("No games to pick from")
+        ttsengine.runAndWait()
 
 def bigPictureMode():
     win = gw.getWindowsWithTitle('Steam')[0]
@@ -368,6 +382,55 @@ def descriptionLast():
     if name != "none":
         ttsengine.say(f"Your game {name}'s description is: {description}")
         ttsengine.runAndWait()
+
+# ----- IMAGE MANIPULATION ----- #
+
+def rotateClockwise():
+    keyDown("shiftleft")
+    keyDown("shiftright")
+    rightClick()
+    keyUp("shiftright")
+    keyUp("shiftleft")
+    press("a")
+    win32clipboard.OpenClipboard()
+    image = win32clipboard.GetClipboardData()
+    win32clipboard.CloseClipboard()
+    imagePath = list(image)
+    for i in range(len(imagePath)-1, -1, -1):
+        if imagePath[i] == "\\":
+            imagePath[i] = "/"
+        if imagePath[i] == '"':
+            imagePath.pop(i)
+    image = ''.join(imagePath)
+    im = Image.open(image)
+    output = im.transpose(Image.Transpose.ROTATE_270)
+    ts = time.time()
+    output.save(f"edits/{ts}.png")
+    im.close()
+
+def rotateCounterclockwise():
+    keyDown("shiftleft")
+    keyDown("shiftright")
+    rightClick()
+    keyUp("shiftright")
+    keyUp("shiftleft")
+    press("a")
+    win32clipboard.OpenClipboard()
+    image = win32clipboard.GetClipboardData()
+    win32clipboard.CloseClipboard()
+    imagePath = list(image)
+    for i in range(len(imagePath)-1, -1, -1):
+        if imagePath[i] == "\\":
+            imagePath[i] = "/"
+        if imagePath[i] == '"':
+            imagePath.pop(i)
+    image = ''.join(imagePath)
+    im = Image.open(image)
+    output = im.transpose(Image.Transpose.ROTATE_90)
+    ts = time.time()
+    output.save(f"edits/{ts}.png")
+    im.close()
+
 
 # ----- HELP ----- #
 
@@ -479,10 +542,19 @@ def listCommands():
     typewrite("dictation mode - Enters Dictation Mode.")
     press("enter")
     typewrite("exit dictation - Exits Dictation Mode.")
+    typewrite("# ----- IMAGE MANIPULATION ----- #")
+    press("enter")
+    press("enter")
+    typewrite("filter - When selecting an image in File Explorer, a filter is chosen and stored in the edits folder in LANCER's directory.")
+    press("enter")
+    typewrite("   - rotate clockwise - Rotates the image clockwise.")
+    press("enter")
+    typewrite("   - rotate counterclockwise - Rotates the image counterclockwise.")
 
 ### --- MAIN CODE --- ###
 
-
+time.sleep(10)
+rotateCounterclockwise()
 
 while True:
     try:
@@ -493,7 +565,7 @@ while True:
             audio = r.listen(source)
             print(r.recognize_google(audio))
             text = r.recognize_google(audio)
-            if dictation == False and respond == False:
+            if dictation == False and respond == False and filter == False:
                 if text.startswith("Lancer "):
                     text = text[7:]
                     if text == "close tab":
@@ -629,6 +701,10 @@ while True:
                         dictation = True
                         ttsengine.say("turning on Dictation Mode")
                         ttsengine.runAndWait()
+                    elif text == "filter":
+                        filter = True
+                        ttsengine.say("What filter should I add to this photo?")
+                        ttsengine.runAndWait()
                     elif text == "reply":
                         reply()
                         respond = True
@@ -685,6 +761,18 @@ while True:
                 ttsengine.say(f"Replying with {text}")
                 ttsengine.runAndWait()
                 respond = False
+            elif filter == True:
+                if text == "rotate clockwise":
+                    rotateClockwise()
+                    ttsengine.say("Rotating clockwise")
+                    ttsengine.runAndWait()
+                    filter = False
+                elif text == "rotate counterclockwise":
+                    rotateCounterclockwise()
+                    ttsengine.say("Rotating counterclockwise")
+                    ttsengine.runAndWait()
+                    filter = False
+
     except sr.RequestError as e:
         print("Could not request results; {0}".format(e))
 
